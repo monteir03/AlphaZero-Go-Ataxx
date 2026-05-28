@@ -1,78 +1,392 @@
-# Instructions to run the code
+# 🎮 Instructions to Run the Code
 
-> configurações do jogo
+---
 
-## In configurations{}, we choose what we want.
+# 1. Game Configuration
 
-#### We can choose either if we want communication or not
+All game settings are defined inside:
 
-'comunication': comunication['off'] -> if we don't want communication
+```python
+configurations{}
+```
 
-'comunication': comunication['on'] -> if we want communication
+This is where we choose:
 
+* whether communication is enabled
+* the game type
+* the board size
+* the game mode
+* the delay between moves
 
-#### With communication
+---
 
-We indicate the server what game we are playing and the board size.
+# 2. Communication Mode
 
-'server_game': "G7x7"  ("A4x4", "A5x5", "A6x6", "G7x7", "G9x9")
+Communication can either be enabled or disabled.
 
-From this, we will extract the size game.
+## Disable Communication
 
+```python
+'communication': communication['off']
+```
 
-#### Without communication
+Use this mode when running locally without server-agent communication.
 
-We provide the size game: 'size': 7 (7/9 -> go, 4/5/6 -> attax)
+---
 
-We provide the game mode: 'game_mode': game_mode['human_vs_human'] (or['agent_vs_agent']or['agent_vs_human'])
+## Enable Communication
 
-!! Note that for the communication way, we don't need the game mode, as there's only one game mode defined: agent_vs_agent !!
+```python
+'communication': communication['on']
+```
 
+Use this mode when running the server and agents through sockets.
 
-#### With and without communication
+---
 
-We provide the type of game: 'jogo': jogar['Go'] or 'jogo': jogar['Attax'] 
+# 3. Running With Communication
 
-We provide the time between moves: 'time_between_moves': 100 (the agent, after our human move, takes "time_between_moves" miliseconds to play)
+When communication is enabled, the game and board size are selected automatically from:
 
+```python
+'server_game': "G7x7"
+```
 
-## In board4{}, board5{}, board6{} (Attax) and in board7{}, board9{} (Go) we define the numpy arrays based on each size
+Available options:
 
-This numpy array is then called by main() based on the size it receive, representing the game's initial state.
+```python
+"A4x4"
+"A5x5"
+"A6x6"
+"G7x7"
+"G9x9"
+```
 
-To Attax, we have numpy arrays 4 by 4, 5 by 5 and 6 by 6.
+Where:
 
-To Go, we have numpy arrays 7 by 7 and 9 by 9.
+* `A` → Attax
+* `G` → Go
 
-The free pieces are known as 0 (to Go, it is all 0's).
+Examples:
 
-!! The following only occurs in Attax !!
+| Value  | Game  | Board Size |
+| ------ | ----- | ---------- |
+| `A4x4` | Attax | 4×4        |
+| `A6x6` | Attax | 6×6        |
+| `G7x7` | Go    | 7×7        |
+| `G9x9` | Go    | 9×9        |
 
-The occupied pieces can be of 2 types: non playable blocks, known as 3; playable blocks but initial occupied by game pieces, known as -1 (if black piece) or 1 (if white piece).
+The program automatically extracts:
 
-We also can try distinct initial configurations instead of the typical 4 corner pieces start.
+* the game type
+* the board size
 
-As the numpy array is defined by a matrix, we can only change the location of the pieces in configurações do jogo.
+from the selected value.
 
+---
 
-## In comunication{} we define the communication parameters
+## Important Note
 
+When communication is enabled, the game mode does **not** need to be defined.
+
+Only one mode is supported:
+
+```python
+agent_vs_agent
+```
+
+---
+
+# 4. Running Without Communication
+
+When communication is disabled, we must manually define the board size and game mode.
+
+---
+
+## Board Size
+
+```python
+'size': 7
+```
+
+Supported sizes:
+
+| Size | Game  |
+| ---- | ----- |
+| `4`  | Attax |
+| `5`  | Attax |
+| `6`  | Attax |
+| `7`  | Go    |
+| `9`  | Go    |
+
+---
+
+## Game Mode
+
+Example:
+
+```python
+'game_mode': game_mode['human_vs_human']
+```
+
+Available modes:
+
+```python
+game_mode['human_vs_human']
+game_mode['agent_vs_agent']
+game_mode['agent_vs_human']
+```
+
+---
+
+# 5. Common Configuration
+
+The following settings are required both with and without communication.
+
+---
+
+## Game Selection
+
+```python
+'game': play['Go']
+```
+
+or
+
+```python
+'game': play['Attax']
+```
+
+---
+
+## Time Between Moves
+
+```python
+'time_between_moves': 100
+```
+
+Value is measured in **milliseconds**.
+
+After a human move, the agent waits this amount of time before playing.
+
+---
+
+# 6. Board Definitions
+
+The initial game boards are defined using NumPy arrays.
+
+## Attax Boards
+
+Defined in:
+
+```python
+board4{}
+board5{}
+board6{}
+```
+
+Supported sizes:
+
+* 4×4
+* 5×5
+* 6×6
+
+---
+
+## Go Boards
+
+Defined in:
+
+```python
+board7{}
+board9{}
+```
+
+Supported sizes:
+
+* 7×7
+* 9×9
+
+---
+
+## Board Loading
+
+Inside `main()`, the correct board is automatically selected according to the chosen board size.
+
+---
+
+# 7. Piece Representation
+
+## Go
+
+Go boards start completely empty.
+
+```python
+0 → empty position
+```
+
+---
+
+## Attax
+
+Attax boards may contain:
+
+| Value | Meaning                   |
+| ----- | ------------------------- |
+| `0`   | Empty/free cell           |
+| `3`   | Blocked/non-playable cell |
+| `1`   | White piece               |
+| `-1`  | Black piece               |
+
+---
+
+## Custom Initial Configurations
+
+The initial piece placement can be modified directly in the NumPy arrays.
+
+This allows testing different starting layouts instead of the traditional four-corner setup.
+
+---
+
+# 8. Communication Configuration
+
+Communication parameters are defined in:
+
+```python
+communication{}
+```
+
+Parameters:
+
+```python
 'port'
-'server_host' -> "= localhost" if we are running in our own machine; " = '' " if we are receiving from other machines
-'client_host' -> "= localhost" if we are running in our own machine; our machine host ("= socket.gethostbyname(socket.gethostname())") if we are sending to the server in other machine
+'server_host'
+'client_host'
+```
 
-We also have the 'on' and 'off' parameters and, if 'on' is True and 'off' is False, we first run the server and then the two agents (each one represented by main()).
+---
 
-> main()
+## `server_host`
 
-In main(), we inicialize our game with the instructions provided on configurações do jogo.
+Use:
 
-> class Attax and class Go
+```python
+"localhost"
+```
 
-There's an important notion we need to have.
+when running on the same machine.
 
-In Attax, the starting player is white, so white is known as 1 and black is known as -1.
+Use:
 
-However, in Go, the starting plater is black, so white is known as -1 and black is known as 1.
+```python
+""
+```
 
-This help in communication, as the first agent to play is always 1 (white in Attax and black in Go).
+when receiving connections from external machines.
+
+---
+
+## `client_host`
+
+Use:
+
+```python
+"localhost"
+```
+
+when running locally.
+
+Use:
+
+```python
+socket.gethostbyname(socket.gethostname())
+```
+
+when connecting to a server running on another machine.
+
+---
+
+# 9. Communication Workflow
+
+If communication is enabled:
+
+```python
+communication['on'] == True
+```
+
+and:
+
+```python
+communication['off'] == False
+```
+
+then the execution order is:
+
+1. Start the server
+2. Start the first agent
+3. Start the second agent
+
+Each agent corresponds to one execution of:
+
+```python
+main()
+```
+
+---
+
+# 10. main()
+
+`main()` initializes the game using the parameters defined in:
+
+```python
+configurations{}
+```
+
+It also:
+
+* loads the appropriate board
+* initializes the selected game
+* starts the game loop
+
+---
+
+# 11. Important Difference Between Attax and Go
+
+The internal representation of players differs between the two games.
+
+---
+
+## Attax
+
+The starting player is **white**.
+
+| Value | Player |
+| ----- | ------ |
+| `1`   | White  |
+| `-1`  | Black  |
+
+---
+
+## Go
+
+The starting player is **black**.
+
+| Value | Player |
+| ----- | ------ |
+| `1`   | Black  |
+| `-1`  | White  |
+
+---
+
+# 12. Internal Communication Design
+
+To simplify communication logic, the first player is always internally represented as:
+
+```python
+1
+```
+
+Therefore:
+
+* in **Attax**, `1` corresponds to **white**
+* in **Go**, `1` corresponds to **black**
